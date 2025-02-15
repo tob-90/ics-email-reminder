@@ -2,7 +2,7 @@
 
 ## Overview
 This Python script fetches events from one or more iCalendar (ICS) sources and sends reminder emails. 
-It was specifically developed for Radicale, but it also works with other services such as Google Calendar.
+It was specifically developed for Radicale (https://radicale.org/), but it also works with other services such as Google Calendar.
 It supports recurring events, custom reminder times, and tracking of already sent reminders.
 
 ![calendar_reminder](https://github.com/user-attachments/assets/d3d284b1-4328-475a-b211-7a942eea8d12)
@@ -22,7 +22,7 @@ It supports recurring events, custom reminder times, and tracking of already sen
 This script requires Python 3 and the following dependencies:
 
 ```bash
-pip install smtplib pytz requests icalendar python-decouple dateutil
+pip install urllib3 pytz requests icalendar python-decouple dateutil
 ```
 
 ### Setup
