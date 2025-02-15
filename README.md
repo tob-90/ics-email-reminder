@@ -26,7 +26,7 @@ pip install smtplib pytz requests icalendar python-decouple dateutil
 ### Setup
 1. Copy the file `calendar_reminder.py` to a folder of your choice.
 2. Copy the HTML template file `template_reminder.html` for email notifications to a folder of your choice.
-3. Create a `.env` file with __at least__ the following parameters:
+3. Create a `.env` file in the folder containing `calendar_reminder.py` with __at least__ the following parameters:
    
    ```ini
    SMTP_HOST = '<Your SMTP server>'
