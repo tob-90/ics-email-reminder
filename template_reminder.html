@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="{{lang}}">
+<head>
+    <meta charset="UTF-8">
+    <style>
+		:root {
+			color-scheme: light;
+		}
+        body {
+            font-family: Arial, sans-serif;
+			color: #000000;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            background-color: #ffffff;
+            margin: 50px auto;
+            padding: 20px;
+            max-width: 600px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            word-wrap: break-word;
+        }
+        .header {
+            background-color: #007BFF;
+            color: #ffffff;
+            padding: 1px 0;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+        .content {
+            padding: 20px;
+        }
+        .footer {
+            background-color: #f4f4f4;
+            color: #666666;
+            text-align: center;
+            padding: 10px;
+            border-radius: 0 0 8px 8px;
+            font-size: 12px;
+        }
+        .event-details {
+            margin-bottom: 20px;
+        }
+        .event-details div {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: baseline;
+            word-wrap: break-word;
+        }
+        .event-details div .symbol {
+            margin-right: 10px;
+            color: #007BFF;
+            width: 20px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .event-details div span {
+            display: inline-block;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>{{header}}</h2>
+        </div>
+        <div class="content">
+            <div class="event-details">
+                <div><span class="symbol">📅</span><strong>{{event}}</strong>&nbsp;<span>{{summary}}</span></div>
+                <div><span class="symbol">⏰</span><strong>{{start}}</strong>&nbsp;<span>{{formatted_start_date}}</span></div>
+                <div><span class="symbol">⏰</span><strong>{{end}}</strong>&nbsp;<span>{{formatted_end_date}}</span></div>
+                <div><span class="symbol">📍</span><strong>{{location1}}</strong>&nbsp;<span>{{location}}</span></div>
+                <div><span class="symbol">ℹ️</span><strong>{{description1}}</strong>&nbsp;<span>{{description}}</span></div>
+                <div><span class="symbol">👤</span><strong>{{organizer1}}</strong>&nbsp;<span>{{organizer}}</span></div>
+                <div><span class="symbol">👥</span><strong>{{attendee1}}</strong>&nbsp;<span>{{attendee}}</span></div>
+            </div>
+        </div>
+        <div class="footer">
+            {{footer}}
+        </div>
+    </div>
+</body>
+</html>
