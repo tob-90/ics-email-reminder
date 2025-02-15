@@ -12,6 +12,8 @@ It supports recurring events, custom reminder times, and tracking of already sen
 - Sends email notifications using HTML templates
 - Supports recurring events (RRULE)
 - Tracks sent reminders to avoid duplicate emails
+- A maximum of 10 emails are sent per script execution to prevent mass mailing
+- Upcoming events are checked within the past 24 hours and the next 30 minutes.
 - Simple configurable via a single `.env` file
 - Multi-language (german/english)
 
