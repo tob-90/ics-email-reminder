@@ -1,6 +1,6 @@
 # Calendar Reminder Script
 
-## Overview
+## Description
 This Python script fetches events from one or more iCalendar (ICS) sources and sends reminder emails. 
 It was specifically developed for Radicale (https://radicale.org/), but it also works with other services such as Google Calendar.
 It supports recurring events, custom reminder times, and tracking of already sent reminders.
