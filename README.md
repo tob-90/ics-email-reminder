@@ -82,4 +82,5 @@ python3 calendar_reminder.py
 | `TRACKING_FILE_PATH`   | Path to save the tracking file           | `/path/to/tracking_file.txt`       | `tracking_file.txt`     |
 
 ## Disclaimer
-This script is provided "as is," without any warranties or guarantees. The author is not responsible for any data loss, missed reminders, or unintended consequences resulting from the use of this script. Users are responsible for configuring and testing the script to ensure it meets their needs. Use at your own risk.
+> [!CAUTION]
+> This script is provided "as is," without any warranties or guarantees. The author is not responsible for any data loss, missed reminders, or unintended consequences resulting from the use of this script. Users are responsible for configuring and testing the script to ensure it meets their needs. Use at your own risk.
