@@ -103,7 +103,7 @@ def convert_until_to_datetime(rrule_dict, timezone):
     if "UNTIL" in rrule_dict:
         until_values = rrule_dict["UNTIL"]
         for i, value in enumerate(until_values):
-            #print(f"UNTIL-Wert vor der Verarbeitung: {value} (Typ: {type(value)})")  # Debugging
+
             try:
                 if isinstance(value, str):
                     # Wenn der UNTIL-Wert ein String ist, konvertiere ihn
@@ -126,12 +126,11 @@ def convert_until_to_datetime(rrule_dict, timezone):
             except Exception as e:
                 print(f"Fehler beim Konvertieren des UNTIL-Werts: {value}, Fehler: {e}")
 
-def generate_recurring_events(start_date, rule, until=None):
+def generate_recurring_events(start_date, rule, until=None, exdates=None):
     start_date = start_date.astimezone(LOCAL_TIMEZONE)
-
     if until:
         until = until.astimezone(LOCAL_TIMEZONE)
-
+    
     try:
         rrule_set = rrule.rrulestr(rule, dtstart=start_date)
     except Exception as e:
@@ -142,8 +141,22 @@ def generate_recurring_events(start_date, rule, until=None):
     for event_date in rrule_set:
         if until and event_date > until:
             break
-        events.append(event_date)
 
+        # Sicherstellen, dass event_date eine Zeitzone hat und auf LOCAL_TIMEZONE normalisieren
+        event_date = LOCAL_TIMEZONE.localize(event_date.replace(tzinfo=None))
+
+        if exdates:
+            for exdate in exdates:
+                if exdate.tzinfo is None:
+                    exdate = LOCAL_TIMEZONE.localize(exdate)
+                else:
+                    exdate = exdate.astimezone(LOCAL_TIMEZONE)
+
+        if exdates and event_date in exdates:
+            continue
+
+        events.append(event_date)
+    
     return events
 
 # Funktion zum Extrahieren der tatsächlichen Alarmzeit
@@ -152,7 +165,7 @@ def extract_last_ack_time(component, timezone):
     if last_ack_str:
         # Überprüfe auf den speziellen Wert
         if last_ack_str == "99991231T235859Z":
-            return "99991231T235859Z"  # Oder eine andere geeignete Rückgabe, je nach Bedarf
+            return "99991231T235859Z"
 
         try:
             # Versuche, das Datum zu parsen
@@ -169,10 +182,6 @@ def extract_last_ack_time(component, timezone):
 def generate_email_body(summary, formatted_start_date, formatted_end_date, location, description, organizer, attendee):
     with open(template_file_path, 'r') as template_file:
         template = template_file.read()
-
-    # Sicherstellen, dass description ein String ist
-    # if isinstance(description, list):
-        # description = "\n".join(description)  # Liste in einen String umwandeln
 
     # Sicherstellen, dass attendee ein String ist
     if isinstance(attendee, list):
@@ -269,6 +278,16 @@ def check_and_send_reminders():
                         dtend_str = component.get("DTEND").to_ical().decode('utf-8')
                         event_end = parser.parse(dtend_str).astimezone(LOCAL_TIMEZONE)
 
+                    # EXDATE-Werte extrahieren
+                    exdates = set()
+                    if "EXDATE" in component:
+                        exdate_values = component.get("EXDATE")
+                        if isinstance(exdate_values, list):
+                            for ex in exdate_values:
+                                exdates.add(parser.parse(ex.to_ical().decode('utf-8')).astimezone(LOCAL_TIMEZONE))
+                        else:
+                            exdates.add(parser.parse(exdate_values.to_ical().decode('utf-8')).astimezone(LOCAL_TIMEZONE))
+
                     # Serientermine prüfen
                     recurring_events = []
                     if "RRULE" in component:
@@ -280,17 +299,13 @@ def check_and_send_reminders():
 
                         for key, values in rrule_dict.items():
                             if key == "UNTIL" and isinstance(values[0], datetime):
-                                #print(f"Original UNTIL: {values[0]} (tzinfo={values[0].tzinfo})")  # Debugging
                                 values = [values[0].astimezone(LOCAL_TIMEZONE).strftime("%Y%m%dT%H%M%SZ")]
-                                #print(f"Converted UNTIL (UTC): {values[0]}")  # Debugging
 
                             rrule_parts.append(f"{key}={','.join(str(value) for value in values)}")
 
                         rrule_str = "RRULE:" + ";".join(rrule_parts)
 
-                        #print(f"Final RRULE String: {rrule_str}")  # Debugging
-                        recurring_events = generate_recurring_events(event_start, rrule_str, until=now + timedelta(seconds=time_upper_bound))
-                        #print(f"Geprüfte Events für {summary} ({event_id}): {recurring_events}")
+                        recurring_events = generate_recurring_events(event_start, rrule_str, until=now + timedelta(seconds=time_upper_bound), exdates=exdates)
                     else:
                         recurring_events.append(event_start)
 
@@ -304,18 +319,12 @@ def check_and_send_reminders():
 
                     for event_date in recurring_events:
                         event_start = event_date
-                        # Überprüfen, ob es sich um einen ganztägigen Termin handelt
+
                         if event_start.time() == datetime.min.time() and event_end.time() == datetime.min.time():
-                            # Ganztägiger Termin: Setze das Enddatum auf den nächsten Tag
                             event_end = event_start + timedelta(days=1)
                         else:
-                            # Bestehende Logik für andere Termine
                             if event_end < event_start:
                                 event_end = event_end.replace(year=event_start.year, month=event_start.month, day=event_start.day)
-
-                        # Überprüfen, ob das Enddatum in der Vergangenheit liegt
-                        #if event_end < event_start:
-                            #event_end = event_end.replace(year=event_start.year, month=event_start.month, day=event_start.day)
 
                         if trigger:
                             match = re.match(r"(-?)P(?:(\d+)D)?T?(?:(\d+)H)?(?:(\d+)M)?", trigger)
@@ -328,7 +337,6 @@ def check_and_send_reminders():
                                 trigger_timedelta = timedelta(days=multiplier * days, hours=multiplier * hours, minutes=multiplier * minutes)
                                 time_until_event = event_start + trigger_timedelta - now + timedelta(seconds=time_upper_bound)
                             else:
-                                #print(f"Ungültiges Trigger-Format: {trigger}! Ignoriere Trigger.") # Debugging
                                 last_ack_time = extract_last_ack_time(component, LOCAL_TIMEZONE)
                                 if not last_ack_time or last_ack_time == "99991231T235859Z":
                                     time_until_event = event_start - now
